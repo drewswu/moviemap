@@ -1,7 +1,7 @@
 var API_TITLES_URL = "http://drewbie.io/moviemap/api/sanfrancisco/titles",
     API_LOCATIONS_URL = "http://drewbie.io/moviemap/api/sanfrancisco/locations?title=",
     markers = [],      // Stores google map markers
-    titles = [],   // Stores all movie titles
+    titles = [],       // Stores all movie titles
     geocoder,          // Google geocode obj
     map,               // Google Map obj
     baseLocation,      // San Francisco LatLng
@@ -15,7 +15,7 @@ function initializeMap() {
   var mapOptions = {
     zoom: 12,
     center: baseLocation,
-  }
+  };
   map = new google.maps.Map($("#map-canvas")[0], mapOptions);
 }
 
@@ -158,4 +158,4 @@ function updateMap() {
     displayError('errorIFV', '"' + input + '" is not a valid movie title', false);
     clearError('errorIFV', 5000);
   }
-};
+}
