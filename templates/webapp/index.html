@@ -9,8 +9,6 @@
     <title>Movie Map - {{ city }}</title>
     <link rel="stylesheet" href="{% static "moviemap.css" %}" type="text/css">
     <link rel="stylesheet" href="{% static "nprogress.css" %}" type="text/css">
-    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp"></script>
-
   </head>
   <body>
     <h1>San Francisco Movie Map</h1>
@@ -28,9 +26,9 @@
         <tr id="first-row"><th>Film Location</th><th>Fun Facts</th></tr>
       </table>
     </div>
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp"></script>
     <script src="{% static "js/jquery-1.11.1.min.js" %}" type="application/javascript"></script>
     <script src="{% static "js/typeahead.bundle.min.js" %}" type="application/javascript"></script>
-
     <script src="{% static "js/nprogress.js" %}" type="application/javascript"></script>
     <script src="{% static "js/moviemap.js" %}" type="application/javascript"></script>
   </body>

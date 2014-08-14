@@ -18,10 +18,10 @@ function initialize() {
   }
   map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
 }
-google.maps.event.addDomListener(window, 'load', initialize);
 
 /* Typeahead init */
 $(document).ready(function() {
+  google.maps.event.addDomListener(window, 'load', initialize);
   titles_engine = new Bloodhound({
     datumTokenizer: Bloodhound.tokenizers.obj.whitespace('name'),
     queryTokenizer: Bloodhound.tokenizers.whitespace,
@@ -126,9 +126,8 @@ function updateMap() {
           (function(address){
             NProgress.inc();
             addRow(address);
-            if (address.locations) {
+            if (address.locations !== null) {
               var location_string = address.locations;
-              /* TODO: Refer to documentation for more accurate geocode biasing */
               geocoder.geocode({
                   'address': address.locations + ', San Francisco, California',
                   'location': base_location,
@@ -155,7 +154,7 @@ function updateMap() {
                 }
               );
             } else {
-              displayError('errorLOC', 'Error: location with no address detected "' + JSON.stringify(data[x]) + '"<br>Logged to console.log.', true);
+              displayError('errorLOC', 'Error: Location with no address returned: "' + JSON.stringify(address) + '"<br>Logged to console.log.', true);
               clearError('errorLOC', 10000);
             }
           })(data[x]);
