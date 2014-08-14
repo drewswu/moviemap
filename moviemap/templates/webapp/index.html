@@ -1,0 +1,37 @@
+{% load staticfiles %}
+<!doctype HTML>
+<meta http-equiv="Cache-control" content="public">
+<html>
+  <link rel="shortcut icon" type="image/png" href="{% static "images/favicon.png" %}">
+  <head>
+    <meta charset="utf-8">
+    <meta name="author" content="Andrew Wu">
+    <title>Movie Map - {{ city }}</title>
+    <link rel="stylesheet" href="{% static "moviemap.css" %}" type="text/css">
+    <link rel="stylesheet" href="{% static "nprogress.css" %}" type="text/css">
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp"></script>
+
+  </head>
+  <body>
+    <h1>San Francisco Movie Map</h1>
+    <!- Search Box ->
+    <div id="prefetch">
+      <input id="search" class="typeahead" type="text" placeholder="Movie Title"><input id="submit" type="submit" class="tfbutton" onclick="updateMap();">
+    </div>
+    <!- Google Map ->
+    <div id="map-canvas">
+    </div>
+    <!- Location Table ->
+    <h2 id="table-title"></h2>
+    <div id="table-div" class="table-div" style="display: none">
+      <table id="locations-table">
+        <tr id="first-row"><th>Film Location</th><th>Fun Facts</th></tr>
+      </table>
+    </div>
+    <script src="{% static "js/jquery-1.11.1.min.js" %}" type="application/javascript"></script>
+    <script src="{% static "js/typeahead.bundle.min.js" %}" type="application/javascript"></script>
+
+    <script src="{% static "js/nprogress.js" %}" type="application/javascript"></script>
+    <script src="{% static "js/moviemap.js" %}" type="application/javascript"></script>
+  </body>
+</html>
