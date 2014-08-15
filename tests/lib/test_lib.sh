@@ -8,7 +8,7 @@ function error() {
 }
 
 function pass_print() {
-  arg1=${1-'Pass`'}
+  arg1=${1-'Pass'}
   tput setaf 2
   echo [${arg1}]
   tput sgr 0
