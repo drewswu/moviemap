@@ -1,39 +1,41 @@
-var api_titles_url = "http://drewbie.io/moviemap/api/sanfrancisco/titles";
-var api_locations_url = "http://drewbie.io/moviemap/api/sanfrancisco/locations?title=";
-var markers = [];       // Stores google map markers
-var titles_list = [];   // Stores all movie titles
-var geocoder;           // Google geocode obj
-var map;                // Google Map obj
-var base_location;      // San Francisco LatLng
-var titles_engine;      // Bloodhound engine
+var API_TITLES_URL = "http://drewbie.io/moviemap/api/sanfrancisco/titles";
+var API_LOCATIONS_URL = "http://drewbie.io/moviemap/api/sanfrancisco/locations?title=";
+var markers = [];      // Stores google map markers
+var titlesList = [];   // Stores all movie titles
+var geocoder;          // Google geocode obj
+var map;               // Google Map obj
+var baseLocation;      // San Francisco LatLng
+var locationTable;     // Reference to location table jQuery object
 
 
 /* Google Map init */
-function initialize() {
+function initializeMap() {
   geocoder = new google.maps.Geocoder();
-  base_location = new google.maps.LatLng(37.77493, -122.41942);
+  baseLocation = new google.maps.LatLng(37.77493, -122.41942);  // San Francisco
   var mapOptions = {
     zoom: 12,
-    center: base_location
+    center: baseLocation,
   }
-  map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+  map = new google.maps.Map($("#map-canvas")[0], mapOptions);
 }
 
-/* Typeahead init */
 $(document).ready(function() {
-  google.maps.event.addDomListener(window, 'load', initialize);
-  titles_engine = new Bloodhound({
+  google.maps.event.addDomListener(window, 'load', initializeMap);
+  locationTable = $("#locations-table");
+  $("#submit")[0].onclick = updateMap;
+  /* Typeahead init */
+  var titlesEngine = new Bloodhound({
     datumTokenizer: Bloodhound.tokenizers.obj.whitespace('name'),
     queryTokenizer: Bloodhound.tokenizers.whitespace,
     prefetch: {
-      url: api_titles_url,
+      url: API_TITLES_URL,
       ttl: 1,  // slight hack: invalidate cache to save titles
       ajax: {
         async: 'true',
         type: 'GET',
         dataType: 'json',
         success: function(data) {
-          window.titles_list = data.titles;
+          window.titlesList = data.titles;
         }
       },
       filter: function(data) {
@@ -43,7 +45,7 @@ $(document).ready(function() {
       }
     }
   });
-  titles_engine.initialize();
+  titlesEngine.initialize();
   $('#prefetch .typeahead').typeahead({
     hint: true,
     highlight: true,
@@ -52,7 +54,7 @@ $(document).ready(function() {
   {
     name: 'titles',
     displayKey: 'name',
-    source: titles_engine.ttAdapter(),
+    source: titlesEngine.ttAdapter(),
   });
 });
 
@@ -64,10 +66,11 @@ function deleteMarkers() {
   markers = [];
 }
 
-/* Deletes location table */
+/* Deletes all rows from the locations table */
 function deleteTable() {
-  $("#locations-table").find("tr:gt(0)").remove();
-  $("#table-div")[0].style.display = 'none';
+  locationTable.find("tr:gt(0)").remove();
+  //$("#table-div").style.display = 'none';
+  $("#table-div").hide();
 }
 
 /* Clears error after a timeout period */
@@ -85,15 +88,13 @@ function displayError(id, msg, logging) {
   }
 }
 
-/* Add a row to the fun facts table */
-/* TODO: use DOM reference to table instead of costly jQuery lookups! */
+/* Add a row to the location-fun facts table */
 function addRow(address) {
-  var table = $("#locations-table")[0];
-  var row = table.insertRow(1);
+  var row = locationTable[0].insertRow(1);
   var cell1 = row.insertCell(0);
   var cell2 = row.insertCell(1);
-  if (address.fun_facts) {
-    cell2.innerHTML = address.fun_facts;
+  if (address.funFacts) {
+    cell2.innerHTML = address.funFacts;
   } else {
     cell2.innerHTML = '-';
   }
@@ -104,11 +105,11 @@ function addRow(address) {
   }
 }
 
-/* Adds map markers for all locations returned */
+/* Adds map markers for all returned locations. */
 function updateMap() {
-  input = $("#search").val();
+  input = $('#search').val();
   // Basic input validation
-  if (titles_list.indexOf(input) >= 0) {
+  if (titlesList.indexOf(input) >= 0) {
     // Start progress bar
     NProgress.start();
     NProgress.set(0.2);
@@ -117,7 +118,7 @@ function updateMap() {
       async: 'false',
       dataType: 'json',
       type: 'GET',
-      url: api_locations_url + encodeURIComponent(input),
+      url: API_LOCATIONS_URL + encodeURIComponent(input),
       success: function(data) {
         // Teardown any previous results
         deleteMarkers();
@@ -127,10 +128,10 @@ function updateMap() {
             NProgress.inc();
             addRow(address);
             if (address.locations !== null) {
-              var location_string = address.locations;
+              var locationString = address.locations;
               geocoder.geocode({
-                  'address': address.locations + ', San Francisco, California',
-                  'location': base_location,
+                  'address': address.locations + ', San Francisco, CA',
+                  'location': window.baseLocation,
                   'region': 'us',
                 },
                 function(results) {
@@ -159,7 +160,8 @@ function updateMap() {
             }
           })(data[x]);
         NProgress.done();
-        $('#table-div')[0].style.display = 'block';  // Display fun facts table
+        //$('#table-div')[0].style.display = 'block';  // Display fun facts table
+        $('#table-div').show();  // Display fun facts table
       }
     }});
   } else {
