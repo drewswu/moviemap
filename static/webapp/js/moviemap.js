@@ -1,7 +1,7 @@
 var API_TITLES_URL = "http://drewbie.io/moviemap/api/sanfrancisco/titles",
     API_LOCATIONS_URL = "http://drewbie.io/moviemap/api/sanfrancisco/locations?title=",
     markers = [],      // Stores google map markers
-    titlesList = [],   // Stores all movie titles
+    titles = [],   // Stores all movie titles
     geocoder,          // Google geocode obj
     map,               // Google Map obj
     baseLocation,      // San Francisco LatLng
@@ -29,13 +29,13 @@ $(document).ready(function() {
     queryTokenizer: Bloodhound.tokenizers.whitespace,
     prefetch: {
       url: API_TITLES_URL,
-      ttl: 1,  // slight hack: invalidate cache to save titles
+      ttl: 1,  // slight hack: invalidate cache in order to load titles
       ajax: {
         async: 'true',
         type: 'GET',
         dataType: 'json',
         success: function(data) {
-          titlesList = data.titles;
+          titles = data.titles;
         }
       },
       filter: function(data) {
@@ -58,7 +58,7 @@ $(document).ready(function() {
   });
 });
 
-/* Deletes map markers, if present */
+/* Deletes any map markers */
 function deleteMarkers() {
   for (var x = 0; x < markers.length; x++) {
     markers[x].setMap(null);
@@ -66,18 +66,18 @@ function deleteMarkers() {
   markers = [];
 }
 
-/* Deletes all rows from the locations table */
+/* Removes all rows from the location table */
 function deleteTable() {
   locationTable.find("tr:gt(0)").remove();
   $("#table-div").hide();
 }
 
-/* Clears error after a timeout period */
+/* Clears error message after a timeout period */
 function clearError(id, sec) {
   setTimeout(function(){ $('#' + id).remove();}, sec);
 }
 
-/* Display error with optional console logging */
+/* Display error message with optional console logging */
 function displayError(id, msg, logging) {
   $('#map-canvas').after(
     '<div id="' + id + '" class="error">' + msg + '</div>'
@@ -87,28 +87,19 @@ function displayError(id, msg, logging) {
   }
 }
 
-/* Add a row to the location-fun facts table */
+/* Add a row to the location table */
 function addRow(address) {
   var row = locationTable[0].insertRow(1);
-  var cell1 = row.insertCell(0);
-  var cell2 = row.insertCell(1);
-  if (address.funFacts) {
-    cell2.innerHTML = address.funFacts;
-  } else {
-    cell2.innerHTML = '-';
-  }
-  if (address.locations) {
-    cell1.innerHTML = address.locations;
-  } else {
-    cell1.innerHTML = '-';
-  }
+  row.insertCell(0).innerHTML = (address.locations ? address.locations : '-');
+  row.insertCell(1).innerHTML = (address.fun_facts ? address.fun_facts : '-');
 }
 
 /* Adds map markers for all returned locations. */
 function updateMap() {
-  input = $('#search').val();
+  var input = $('#search').val();
+  var lowerCaseTitles = titles.map(function(x) { return x.toLowerCase(); });
   // Basic input validation
-  if (titlesList.indexOf(input) >= 0) {
+  if (lowerCaseTitles.indexOf(input.toLowerCase()) >= 0) {
     // Start progress bar
     NProgress.start();
     NProgress.set(0.2);
@@ -126,15 +117,15 @@ function updateMap() {
           (function(address){
             NProgress.inc();
             addRow(address);
-            if (address.locations !== null) {
+            if (address.locations) {
               var locationString = address.locations;
               geocoder.geocode({
                   'address': address.locations + ', San Francisco, CA',
                   'location': baseLocation,
                   'region': 'us',
                 },
-                function(results) {
-                  if (results !== null) {
+                function(results, status) {
+                  if (status == google.maps.GeocoderStatus.OK) {
                     var marker = new google.maps.Marker({
                       map: map,
                       position: results[0].geometry.location,
@@ -148,20 +139,21 @@ function updateMap() {
                       infowindow.open(map,marker);
                     });
                   } else {
-                    displayError('errorGEO', 'Error: Could not geocode a result from "' + address.locations + '"<br>Logged to console.log', true );
+                    displayError('errorGEO', 'Error: Could not geocode a result for "' + address.locations + '.<br>Status code: ' + status + '"<br>Logged to console.log.', true );
                     clearError('errorGEO', 10000);
                   }
                 }
               );
             } else {
-              displayError('errorLOC', 'Error: Location with no address returned: "' + JSON.stringify(address) + '"<br>Logged to console.log.', true);
+              displayError('errorLOC', 'Error: Location has no address: "' + JSON.stringify(address) + '"<br>Logged to console.log.', true);
               clearError('errorLOC', 10000);
             }
           })(data[x]);
-        NProgress.done();
-        $('#table-div').show();  // Display locations table
-      }
-    }});
+          NProgress.done();  // Stop progress bar
+          $('#table-div').show();  // Display locations table
+        }  // for loop
+      }  // success callback
+    });  // ajax get
   } else {
     displayError('errorIFV', '"' + input + '" is not a valid movie title', false);
     clearError('errorIFV', 5000);
