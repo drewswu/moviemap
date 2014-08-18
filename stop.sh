@@ -1,3 +1,5 @@
 #!/bin/bash
 
-pkill -f 'python manage.py runserver 3004' && echo ">Django process killed" || echo ">No Django process were found"
+PORT=3004
+
+pkill -f "python manage.py runserver ${1-${PORT}}" && echo ">Django process killed" || echo ">No Django process were found"
