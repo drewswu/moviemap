@@ -1,11 +1,11 @@
-var API_TITLES_URL = "http://drewbie.io/moviemap/api/sanfrancisco/titles";
-var API_LOCATIONS_URL = "http://drewbie.io/moviemap/api/sanfrancisco/locations?title=";
-var markers = [];      // Stores google map markers
-var titlesList = [];   // Stores all movie titles
-var geocoder;          // Google geocode obj
-var map;               // Google Map obj
-var baseLocation;      // San Francisco LatLng
-var locationTable;     // Reference to location table jQuery object
+var API_TITLES_URL = "http://drewbie.io/moviemap/api/sanfrancisco/titles",
+    API_LOCATIONS_URL = "http://drewbie.io/moviemap/api/sanfrancisco/locations?title=",
+    markers = [],      // Stores google map markers
+    titlesList = [],   // Stores all movie titles
+    geocoder,          // Google geocode obj
+    map,               // Google Map obj
+    baseLocation,      // San Francisco LatLng
+    locationTable;     // Reference to location table jQuery object
 
 
 /* Google Map init */
@@ -35,7 +35,7 @@ $(document).ready(function() {
         type: 'GET',
         dataType: 'json',
         success: function(data) {
-          window.titlesList = data.titles;
+          titlesList = data.titles;
         }
       },
       filter: function(data) {
@@ -69,7 +69,6 @@ function deleteMarkers() {
 /* Deletes all rows from the locations table */
 function deleteTable() {
   locationTable.find("tr:gt(0)").remove();
-  //$("#table-div").style.display = 'none';
   $("#table-div").hide();
 }
 
@@ -131,17 +130,17 @@ function updateMap() {
               var locationString = address.locations;
               geocoder.geocode({
                   'address': address.locations + ', San Francisco, CA',
-                  'location': window.baseLocation,
+                  'location': baseLocation,
                   'region': 'us',
                 },
                 function(results) {
                   if (results !== null) {
                     var marker = new google.maps.Marker({
-                      map: window.map,
+                      map: map,
                       position: results[0].geometry.location,
                       title: input + ' - ' + address.locations,
                     });
-                    window.markers.push(marker);
+                    markers.push(marker);
                     var infowindow = new google.maps.InfoWindow({
                       content: input + ' - ' + address.locations,
                     });
@@ -160,8 +159,7 @@ function updateMap() {
             }
           })(data[x]);
         NProgress.done();
-        //$('#table-div')[0].style.display = 'block';  // Display fun facts table
-        $('#table-div').show();  // Display fun facts table
+        $('#table-div').show();  // Display locations table
       }
     }});
   } else {
